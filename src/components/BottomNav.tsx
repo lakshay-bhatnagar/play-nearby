@@ -2,12 +2,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Compass, Plus, User, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const NAV_ITEMS = [
+const NAV_ITEMS: Array<{ path: string; icon: typeof Compass; label: string; isAction?: boolean }> = [
   { path: '/', icon: Compass, label: 'Discover' },
   { path: '/activity', icon: Trophy, label: 'Activity' },
   { path: '/create', icon: Plus, label: 'Create', isAction: true },
   { path: '/profile', icon: User, label: 'Profile' },
-] as const;
+];
 
 export function BottomNav() {
   const location = useLocation();
