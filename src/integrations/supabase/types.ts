@@ -14,7 +14,131 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      game_participants: {
+        Row: {
+          game_id: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          game_id: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          game_id?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_participants_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          created_at: string
+          current_players: number
+          date_time: string
+          distance: string | null
+          host_id: string
+          id: string
+          intensity: string
+          is_live: boolean | null
+          location: string
+          max_players: number
+          skill_level: string
+          sport: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_players?: number
+          date_time: string
+          distance?: string | null
+          host_id: string
+          id?: string
+          intensity?: string
+          is_live?: boolean | null
+          location: string
+          max_players?: number
+          skill_level?: string
+          sport: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_players?: number
+          date_time?: string
+          distance?: string | null
+          host_id?: string
+          id?: string
+          intensity?: string
+          is_live?: boolean | null
+          location?: string
+          max_players?: number
+          skill_level?: string
+          sport?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          age: number | null
+          avatar_url: string | null
+          created_at: string
+          fitness_level: number | null
+          id: string
+          location: string | null
+          name: string | null
+          onboarding_completed: boolean | null
+          sport_experiences: Json | null
+          sports: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age?: number | null
+          avatar_url?: string | null
+          created_at?: string
+          fitness_level?: number | null
+          id?: string
+          location?: string | null
+          name?: string | null
+          onboarding_completed?: boolean | null
+          sport_experiences?: Json | null
+          sports?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age?: number | null
+          avatar_url?: string | null
+          created_at?: string
+          fitness_level?: number | null
+          id?: string
+          location?: string | null
+          name?: string | null
+          onboarding_completed?: boolean | null
+          sport_experiences?: Json | null
+          sports?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
