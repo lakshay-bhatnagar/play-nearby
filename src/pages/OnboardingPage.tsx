@@ -74,7 +74,7 @@ export default function OnboardingPage() {
           location,
           fitness_level: fitnessLevel,
           sports: selectedSports,
-          sport_experiences: sportExperiences,
+          sport_experiences: sportExperiences as any,
           onboarding_completed: true,
         })
         .eq('user_id', user.id);

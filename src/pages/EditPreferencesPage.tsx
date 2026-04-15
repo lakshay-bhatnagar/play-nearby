@@ -29,7 +29,7 @@ export default function EditPreferencesPage() {
     setSaving(true);
     const { error } = await supabase.from('profiles').update({
       sports: selectedSports,
-      sport_experiences: sportExperiences,
+      sport_experiences: sportExperiences as any,
       fitness_level: fitnessLevel,
     }).eq('user_id', profile.user_id);
     setSaving(false);
