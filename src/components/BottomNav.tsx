@@ -2,10 +2,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Compass, Plus, User, Trophy, ShoppingBag } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const NAV_ITEMS: Array<{ path: string; icon: typeof Compass; label: string; isAction?: boolean }> = [
+const NAV_ITEMS = [
   { path: '/', icon: Compass, label: 'Discover' },
   { path: '/activity', icon: Trophy, label: 'Activity' },
-  { path: '/create', icon: Plus, label: 'Create', isAction: true },
+  { path: '/create', icon: Plus, label: 'Create', isAction: true }, // The FAB
   { path: '/equips', icon: ShoppingBag, label: 'Equips' },
   { path: '/profile', icon: User, label: 'Profile' },
 ];
@@ -18,26 +18,47 @@ export function BottomNav() {
   if (hiddenPaths.some(p => location.pathname.startsWith(p))) return null;
 
   return (
-    <motion.nav
-      initial={{ y: 100 }}
-      animate={{ y: 0 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-[env(safe-area-inset-bottom,8px)]"
-    >
-      <div className="flex items-center gap-1 px-3 py-2.5 mx-4 mb-2 rounded-full bg-[hsl(0_0%_6%/0.65)] backdrop-blur-2xl border border-[hsl(0_0%_100%/0.08)] shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
+    <div className="fixed bottom-8 left-0 right-0 z-50 flex justify-center px-6 pointer-events-none">
+      <motion.nav
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="
+          relative pointer-events-auto
+          flex items-center justify-around gap-2 p-2 px-4
+          min-w-[320px] max-w-fit
+          bg-black/60 backdrop-blur-2xl 
+          border border-white/10 
+          rounded-[32px]
+          shadow-[0_20px_50px_rgba(0,0,0,0.5)]
+        "
+      >
         {NAV_ITEMS.map((item) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
 
           if (item.isAction) {
             return (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                className="mx-1.5 flex items-center justify-center w-12 h-12 rounded-full bg-neon-blue neon-glow-blue active:scale-90 transition-transform"
-              >
-                <Icon className="w-5 h-5 text-primary-foreground" strokeWidth={2.5} />
-              </button>
+              /* THE FAB STRATEGY */
+              <div key={item.path} className="relative w-14 h-12 flex justify-center">
+                <button
+                  onClick={() => navigate(item.path)}
+                  className="
+                    absolute -top-10 /* Lifts it above the bar */
+                    w-14 h-14 rounded-full 
+                    bg-blue-500 
+                    flex items-center justify-center 
+                    shadow-[0_8px_20px_rgba(59,130,246,0.4)]
+                    border-4 border-[#121212] /* Mimics the 'cutout' look */
+                    active:scale-90 transition-transform
+                  "
+                >
+                  <Icon className="w-7 h-7 text-white" strokeWidth={3} />
+                </button>
+                {/* Optional: Tiny label under the gap if you want it to match Apple Fitness */}
+                <span className="absolute bottom-1 text-[10px] text-gray-500 font-medium">
+                  {item.label}
+                </span>
+              </div>
             );
           }
 
@@ -45,34 +66,23 @@ export function BottomNav() {
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
-              className={`relative flex flex-col items-center justify-center px-4 py-1.5 rounded-full transition-all active:scale-90 ${
-                isActive ? 'bg-[hsl(0_0%_100%/0.08)]' : ''
-              }`}
+              className="relative flex flex-col items-center justify-center min-w-[56px] py-1 group"
             >
               <Icon
-                className={`w-5 h-5 transition-colors ${
-                  isActive ? 'text-neon-blue' : 'text-muted-foreground'
+                className={`w-6 h-6 transition-all ${
+                  isActive ? 'text-blue-400' : 'text-gray-400'
                 }`}
                 strokeWidth={isActive ? 2.5 : 2}
               />
-              <span
-                className={`text-[10px] font-mono tracking-wider mt-0.5 transition-colors ${
-                  isActive ? 'text-neon-blue' : 'text-muted-foreground'
-                }`}
-              >
+              <span className={`text-[10px] mt-1 font-medium ${
+                isActive ? 'text-blue-400' : 'text-gray-500'
+              }`}>
                 {item.label}
               </span>
-              {isActive && (
-                <motion.div
-                  layoutId="nav-indicator"
-                  className="absolute -bottom-0.5 w-1 h-1 rounded-full bg-neon-blue neon-glow-blue"
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-              )}
             </button>
           );
         })}
-      </div>
-    </motion.nav>
+      </motion.nav>
+    </div>
   );
 }
