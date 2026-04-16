@@ -49,7 +49,7 @@ export default function ActivityPage() {
   const weeklyGoal = 100;
 
   return (
-    <div className="min-h-dvh bg-background pb-28">
+    <div className="min-h-dvh bg-background pb-28 overflow-x-hidden relative">
       <div className="absolute top-0 left-0 w-[400px] h-[300px] bg-neon-orange/5 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="px-5 pt-14 pb-4 relative z-10">

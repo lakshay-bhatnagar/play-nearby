@@ -43,9 +43,9 @@ export function BottomNav() {
                 <button
                   onClick={() => navigate(item.path)}
                   className="
-                    absolute -top-10 /* Lifts it above the bar */
+                    absolute -top-7 /* Lifts it above the bar */
                     w-14 h-14 rounded-full 
-                    bg-blue-500 
+                    bg-neon-blue
                     flex items-center justify-center 
                     shadow-[0_8px_20px_rgba(59,130,246,0.4)]
                     border-4 border-[#121212] /* Mimics the 'cutout' look */
@@ -70,12 +70,12 @@ export function BottomNav() {
             >
               <Icon
                 className={`w-6 h-6 transition-all ${
-                  isActive ? 'text-blue-400' : 'text-gray-400'
+                  isActive ? 'text-neon-blue' : 'text-gray-400' 
                 }`}
                 strokeWidth={isActive ? 2.5 : 2}
               />
               <span className={`text-[10px] mt-1 font-medium ${
-                isActive ? 'text-blue-400' : 'text-gray-500'
+                isActive ? 'text-neon-blue' : 'text-gray-500'
               }`}>
                 {item.label}
               </span>

@@ -82,7 +82,7 @@ export default function DiscoverPage() {
   });
 
   return (
-    <div className="min-h-dvh bg-background pb-28">
+    <div className="min-h-dvh bg-background pb-28 overflow-x-hidden relative">
       <div className="absolute top-0 left-1/4 w-[500px] h-[300px] bg-neon-blue/5 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="px-5 pt-14 pb-4 relative z-10">
