@@ -191,6 +191,7 @@ export type Database = {
           cgst: number
           created_at: string
           equipment_cost: number
+          friction_id: string | null
           game_id: string | null
           id: string
           payment_method: string | null
@@ -205,6 +206,7 @@ export type Database = {
           cgst?: number
           created_at?: string
           equipment_cost?: number
+          friction_id?: string | null
           game_id?: string | null
           id?: string
           payment_method?: string | null
@@ -219,6 +221,7 @@ export type Database = {
           cgst?: number
           created_at?: string
           equipment_cost?: number
+          friction_id?: string | null
           game_id?: string | null
           id?: string
           payment_method?: string | null
@@ -339,6 +342,7 @@ export type Database = {
           sports: string[] | null
           updated_at: string
           user_id: string
+          username: string | null
         }
         Insert: {
           activity_points?: number
@@ -356,6 +360,7 @@ export type Database = {
           sports?: string[] | null
           updated_at?: string
           user_id: string
+          username?: string | null
         }
         Update: {
           activity_points?: number
@@ -373,6 +378,7 @@ export type Database = {
           sports?: string[] | null
           updated_at?: string
           user_id?: string
+          username?: string | null
         }
         Relationships: []
       }
