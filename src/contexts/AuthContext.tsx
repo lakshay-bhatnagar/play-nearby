@@ -6,6 +6,7 @@ interface Profile {
   id: string;
   user_id: string;
   name: string | null;
+  username: string | null;
   age: number | null;
   location: string | null;
   fitness_level: number | null;
@@ -13,6 +14,9 @@ interface Profile {
   sport_experiences: any;
   onboarding_completed: boolean | null;
   avatar_url: string | null;
+  activity_points?: number;
+  games_joined?: number;
+  games_created?: number;
 }
 
 interface AuthContextType {
@@ -20,7 +24,7 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, username: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -40,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .select('*')
       .eq('user_id', userId)
       .single();
-    setProfile(data);
+    setProfile(data as any);
   };
 
   const refreshProfile = async () => {
@@ -73,13 +77,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
+  const signUp = async (email: string, password: string, username: string) => {
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { emailRedirectTo: window.location.origin },
     });
-    return { error };
+    if (error) return { error };
+    // Persist username on the auto-created profile (handle_new_user trigger inserts the row)
+    if (data.user) {
+      // Small delay so the profile row exists
+      setTimeout(async () => {
+        await supabase.from('profiles').update({ username }).eq('user_id', data.user!.id);
+      }, 500);
+    }
+    return { error: null };
   };
 
   const signIn = async (email: string, password: string) => {
