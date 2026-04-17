@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { MapPin, Clock, Users, Zap } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { MapPin, Clock, Users, Zap, Calendar } from 'lucide-react';
 import type { Game } from '@/types';
 import { SPORT_ICONS } from '@/types';
 
@@ -10,26 +11,30 @@ interface GameCardProps {
 }
 
 export function GameCard({ game, onJoin, index = 0 }: GameCardProps) {
+  const navigate = useNavigate();
+
   const intensityColor =
-    game.intensity === 'high'
-      ? 'text-neon-orange'
-      : game.intensity === 'medium'
-      ? 'text-neon-blue'
-      : 'text-neon-green';
+    game.intensity === 'high' ? 'text-neon-orange'
+    : game.intensity === 'medium' ? 'text-neon-blue'
+    : 'text-neon-green';
 
   const intensityGlow =
-    game.intensity === 'high'
-      ? 'bg-neon-orange'
-      : game.intensity === 'medium'
-      ? 'bg-neon-blue'
-      : 'bg-neon-green';
+    game.intensity === 'high' ? 'bg-neon-orange'
+    : game.intensity === 'medium' ? 'bg-neon-blue'
+    : 'bg-neon-green';
 
   const slotsLeft = game.maxPlayers - game.currentPlayers;
   const fillPercent = (game.currentPlayers / game.maxPlayers) * 100;
 
-  const formatTime = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const dt = new Date(game.dateTime);
+  const formatTime = () => dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formatDate = () => {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const day = new Date(dt); day.setHours(0, 0, 0, 0);
+    if (day.getTime() === today.getTime()) return 'Today';
+    const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+    if (day.getTime() === tomorrow.getTime()) return 'Tomorrow';
+    return dt.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
   };
 
   return (
@@ -38,12 +43,11 @@ export function GameCard({ game, onJoin, index = 0 }: GameCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.08, duration: 0.4 }}
       whileTap={{ scale: 0.98 }}
-      className="rounded-3xl bg-card border border-border p-4 relative overflow-hidden group active:bg-surface-elevated transition-colors"
+      onClick={() => navigate(`/game/${game.id}`)}
+      className="rounded-3xl bg-card border border-border p-4 relative overflow-hidden group active:bg-surface-elevated transition-colors cursor-pointer"
     >
-      {/* Left accent bar */}
       <div className={`absolute top-4 bottom-4 left-0 w-[2px] ${intensityGlow} rounded-full opacity-60`} />
 
-      {/* Top row */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <span className="text-2xl">{SPORT_ICONS[game.sport] || '🏅'}</span>
@@ -60,17 +64,20 @@ export function GameCard({ game, onJoin, index = 0 }: GameCardProps) {
         )}
       </div>
 
-      {/* Details */}
       <div className="flex flex-col gap-2 mb-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <MapPin className="w-3.5 h-3.5 shrink-0" />
           <span className="truncate">{game.location}</span>
-          <span className="ml-auto text-xs font-mono shrink-0">{game.distance}</span>
+          {game.distance && <span className="ml-auto text-xs font-mono shrink-0">{game.distance}</span>}
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <Calendar className="w-3.5 h-3.5" />
+            <span className="font-medium text-foreground">{formatDate()}</span>
+          </div>
           <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
             <Clock className="w-3.5 h-3.5" />
-            <span>{formatTime(game.dateTime)}</span>
+            <span>{formatTime()}</span>
           </div>
           <div className={`flex items-center gap-1.5 text-sm ${intensityColor}`}>
             <Zap className="w-3.5 h-3.5" />
@@ -79,7 +86,6 @@ export function GameCard({ game, onJoin, index = 0 }: GameCardProps) {
         </div>
       </div>
 
-      {/* Slots */}
       <div className="mb-4">
         <div className="flex justify-between items-center mb-1.5">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -100,10 +106,9 @@ export function GameCard({ game, onJoin, index = 0 }: GameCardProps) {
         </div>
       </div>
 
-      {/* Join button */}
       <motion.button
         whileTap={{ scale: 0.95 }}
-        onClick={onJoin}
+        onClick={(e) => { e.stopPropagation(); onJoin?.(); }}
         className="w-full py-3 rounded-2xl bg-secondary border border-border text-foreground font-medium text-sm hover:bg-surface-elevated transition-colors active:bg-surface-elevated"
       >
         {slotsLeft > 0 ? 'Join Game' : 'Full'}
