@@ -38,8 +38,11 @@ export default function ActivityHistoryPage() {
             <motion.div key={order.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
               className="p-4 rounded-2xl bg-card border border-border">
               <div className="flex justify-between items-start mb-2">
-                <div>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${order.status === 'completed' ? 'bg-neon-green/15 text-neon-green' : 'bg-neon-orange/15 text-neon-orange'}`}>{order.status}</span>
+                <div className="flex flex-col gap-1">
+                  {order.friction_id && (
+                    <span className="text-xs font-mono font-bold text-neon-blue tracking-wider">{order.friction_id}</span>
+                  )}
+                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full self-start ${order.status === 'completed' ? 'bg-neon-green/15 text-neon-green' : 'bg-neon-orange/15 text-neon-orange'}`}>{order.status}</span>
                 </div>
                 <span className="text-[10px] font-mono text-muted-foreground">{new Date(order.created_at).toLocaleDateString('en-IN')}</span>
               </div>

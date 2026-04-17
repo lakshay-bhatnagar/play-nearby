@@ -131,7 +131,7 @@ export default function DiscoverPage() {
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-5 px-5">
             {filteredVenues.map((venue, i) => (
               <motion.div key={venue.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
-                onClick={() => navigate('/create')}
+                onClick={() => navigate(`/venue/${venue.id}`)}
                 className="shrink-0 w-[220px] p-4 rounded-2xl bg-card border border-border cursor-pointer active:scale-[0.97] transition-transform">
                 <h3 className="font-semibold text-foreground text-sm mb-1">{venue.name}</h3>
                 <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2"><MapPin className="w-3 h-3" />{venue.location}</div>

@@ -56,7 +56,10 @@ export default function ProfilePage() {
             ) : (
               <>
                 <h2 className="text-xl font-bold text-foreground">{profile?.name || 'User'}</h2>
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-0.5"><MapPin className="w-3.5 h-3.5" />{profile?.location || 'No location set'}</div>
+                {(profile as any)?.username && (
+                  <p className="text-xs text-muted-foreground/70 font-mono mt-0.5">@{(profile as any).username}</p>
+                )}
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1"><MapPin className="w-3.5 h-3.5" />{profile?.location || 'No location set'}</div>
               </>
             )}
           </div>

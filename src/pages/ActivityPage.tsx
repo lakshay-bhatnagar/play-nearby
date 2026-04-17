@@ -40,8 +40,9 @@ export default function ActivityPage() {
       .then(({ data }) => { setJoinedGames(data || []); setLoading(false); });
   }, [user]);
 
-  const upcoming = joinedGames.filter(p => p.games && new Date(p.games.date_time) > new Date());
-  const past = joinedGames.filter(p => p.games && new Date(p.games.date_time) <= new Date());
+  const now = new Date();
+  const upcoming = joinedGames.filter(p => p.games && new Date(p.games.date_time).getTime() > now.getTime());
+  const past = joinedGames.filter(p => p.games && new Date(p.games.date_time).getTime() <= now.getTime());
 
   const activityPoints = (profile as any)?.activity_points || 0;
   const gamesCreated = (profile as any)?.games_created || 0;
@@ -103,7 +104,7 @@ export default function ActivityPage() {
         ) : upcoming.length > 0 ? (
           <div className="flex flex-col gap-3">
             {upcoming.map((item, i) => (
-              <motion.div key={item.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="p-4 rounded-2xl bg-card border border-border flex items-center gap-4">
+              <motion.div key={item.id} onClick={() => window.location.assign(`/game/${item.games.id}`)} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="p-4 rounded-2xl bg-card border border-border flex items-center gap-4 cursor-pointer active:scale-[0.98] transition-transform">
                 <span className="text-2xl">{SPORT_ICONS[item.games?.sport] || '🏅'}</span>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-foreground text-sm truncate">{item.games?.title}</h3>
@@ -111,8 +112,9 @@ export default function ActivityPage() {
                     <MapPin className="w-3 h-3" /><span className="truncate">{item.games?.location}</span>
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground font-mono shrink-0">
-                  {new Date(item.games?.date_time).toLocaleDateString('en-IN')}
+                <div className="text-xs text-muted-foreground font-mono shrink-0 text-right">
+                  <div>{new Date(item.games?.date_time).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</div>
+                  <div className="text-[10px]">{new Date(item.games?.date_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                 </div>
               </motion.div>
             ))}
@@ -130,7 +132,7 @@ export default function ActivityPage() {
         {past.length > 0 ? (
           <div className="flex flex-col gap-3">
             {past.map((item, i) => (
-              <motion.div key={item.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 + 0.2 }} className="p-4 rounded-2xl bg-card border border-border flex items-center gap-4 opacity-70">
+              <motion.div key={item.id} onClick={() => window.location.assign(`/game/${item.games.id}`)} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 + 0.2 }} className="p-4 rounded-2xl bg-card border border-border flex items-center gap-4 opacity-70 cursor-pointer active:scale-[0.98] transition-transform">
                 <span className="text-2xl">{SPORT_ICONS[item.games?.sport] || '🏅'}</span>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-foreground text-sm truncate">{item.games?.title}</h3>
@@ -138,6 +140,7 @@ export default function ActivityPage() {
                     <MapPin className="w-3 h-3" /><span className="truncate">{item.games?.location}</span>
                   </div>
                 </div>
+                <div className="text-[10px] text-muted-foreground font-mono shrink-0">{new Date(item.games?.date_time).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</div>
               </motion.div>
             ))}
           </div>
