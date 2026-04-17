@@ -14,11 +14,12 @@ export default function EquipHistoryPage() {
   useEffect(() => {
     if (!user) return;
     const fetch = async () => {
-      const { data: orders } = await supabase.from('orders').select('id').eq('user_id', user.id);
+      const { data: orders } = await supabase.from('orders').select('id, friction_id').eq('user_id', user.id);
       if (!orders || orders.length === 0) { setLoading(false); return; }
       const orderIds = orders.map(o => o.id);
+      const friction = Object.fromEntries(orders.map((o: any) => [o.id, o.friction_id]));
       const { data } = await supabase.from('order_items').select('*, products(name, sport)').in('order_id', orderIds).order('created_at', { ascending: false });
-      setItems(data || []);
+      setItems((data || []).map((it: any) => ({ ...it, friction_id: friction[it.order_id] })));
       setLoading(false);
     };
     fetch();
@@ -47,10 +48,13 @@ export default function EquipHistoryPage() {
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium text-foreground text-sm">{(item.products as any)?.name || 'Item'}</h3>
                 <p className="text-xs text-muted-foreground">{(item.products as any)?.sport} · Qty: {item.quantity}</p>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${item.mode === 'rent' ? 'bg-neon-green/15 text-neon-green' : 'bg-neon-blue/15 text-neon-blue'}`}>{item.mode === 'rent' ? 'Rented' : 'Bought'}</span>
                   <span className="text-xs font-mono text-muted-foreground">₹{Number(item.unit_price).toFixed(0)} × {item.quantity}</span>
                 </div>
+                {item.friction_id && (
+                  <p className="text-[10px] font-mono text-neon-blue mt-1.5 tracking-wider">{item.friction_id}</p>
+                )}
               </div>
               {item.mode === 'rent' && item.return_date && (
                 <div className="text-right shrink-0">

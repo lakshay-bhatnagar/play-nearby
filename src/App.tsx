@@ -17,6 +17,10 @@ import EditPreferencesPage from "./pages/EditPreferencesPage";
 import ActivityHistoryPage from "./pages/ActivityHistoryPage";
 import EquipHistoryPage from "./pages/EquipHistoryPage";
 import NotificationsPage from "./pages/NotificationsPage";
+import VenueDetailsPage from "./pages/VenueDetailsPage";
+import GameDetailsPage from "./pages/GameDetailsPage";
+import CartPage from "./pages/CartPage";
+import PaymentConfirmationPage from "./pages/PaymentConfirmationPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +54,10 @@ const AppRoutes = () => (
       <Route path="/activity-history" element={<ProtectedRoute><ActivityHistoryPage /></ProtectedRoute>} />
       <Route path="/equip-history" element={<ProtectedRoute><EquipHistoryPage /></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+      <Route path="/venue/:id" element={<ProtectedRoute><VenueDetailsPage /></ProtectedRoute>} />
+      <Route path="/game/:id" element={<ProtectedRoute><GameDetailsPage /></ProtectedRoute>} />
+      <Route path="/cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
+      <Route path="/payment-confirmation/:orderId" element={<ProtectedRoute><PaymentConfirmationPage /></ProtectedRoute>} />
       <Route path="/login" element={<AuthRoute><LoginPage /></AuthRoute>} />
       <Route path="/signup" element={<AuthRoute><SignupPage /></AuthRoute>} />
       <Route path="/onboarding" element={<OnboardingPage />} />

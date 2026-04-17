@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Check, X, Users, Zap, MapPin, Calendar, Clock, ShoppingBag, Plus, Minus } from 'lucide-react';
 import { SPORTS, SPORT_ICONS } from '@/types';
@@ -17,6 +17,8 @@ export default function CreateGamePage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const preselectedVenueId = searchParams.get('venue');
 
   const [step, setStep] = useState<Step>('sport');
   const [sport, setSport] = useState('');
@@ -35,6 +37,24 @@ export default function CreateGamePage() {
   const [cart, setCart] = useState<Record<string, { qty: number; mode: 'buy' | 'rent' }>>({});
   const [paymentMethod, setPaymentMethod] = useState('upi');
   const [loading, setLoading] = useState(false);
+
+  // Preload preselected venue
+  useEffect(() => {
+    if (!preselectedVenueId) return;
+    supabase.from('venues').select('*').eq('id', preselectedVenueId).single().then(({ data }) => {
+      if (data) {
+        const v = data as any;
+        setSelectedVenue(v);
+        if (v.supported_sports?.length === 1) {
+          setSport(v.supported_sports[0]);
+          setStep('slots');
+          setSelectedDate(new Date().toISOString().split('T')[0]);
+        } else {
+          setStep('sport');
+        }
+      }
+    });
+  }, [preselectedVenueId]);
 
   // Fetch venues when sport is selected
   useEffect(() => {
@@ -182,8 +202,8 @@ export default function CreateGamePage() {
     await supabase.from('game_participants').insert({ game_id: gameData.id, user_id: user.id });
 
     setLoading(false);
-    toast({ title: 'Game Created! 🎉', description: 'Payment successful. Your game is live!' });
-    navigate('/');
+    toast({ title: 'Game Created! 🎉', description: 'Payment successful' });
+    navigate(`/payment-confirmation/${orderData.id}`, { replace: true });
   };
 
   const formatDay = (d: string) => {

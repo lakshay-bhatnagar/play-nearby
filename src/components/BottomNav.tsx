@@ -14,7 +14,7 @@ export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const hiddenPaths = ['/login', '/signup', '/onboarding', '/create'];
+  const hiddenPaths = ['/login', '/signup', '/onboarding', '/create', '/cart', '/payment-confirmation', '/venue/', '/game/'];
   if (hiddenPaths.some(p => location.pathname.startsWith(p))) return null;
 
   return (
