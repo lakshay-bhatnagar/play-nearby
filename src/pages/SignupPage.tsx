@@ -43,7 +43,7 @@ export default function SignupPage() {
     if (error) {
       setError(error.message);
     } else {
-      toast({ title: 'Account created!', description: 'Welcome to Pulse Play. Let\'s set up your profile.' });
+      toast({ title: 'Account created!', description: 'Welcome to Friction. Let\'s set up your profile.' });
     }
   };
 
@@ -53,10 +53,14 @@ export default function SignupPage() {
       <div className="flex-1 flex flex-col justify-center px-6 relative z-10 py-10">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-sm mx-auto w-full">
           <div className="flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 rounded-2xl bg-neon-green flex items-center justify-center neon-glow-green">
-              <Zap className="w-5 h-5 text-accent-foreground" />
-            </div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Pulse Play</h1>
+            <img
+                src="/logo.png" 
+                alt="Logo"
+                width={100}
+                height={100}
+                className="w-6 h-6 object-contain"
+              />
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">Friction</h1>
           </div>
           <h2 className="text-3xl font-bold text-foreground mb-2">Create account</h2>
           <p className="text-muted-foreground mb-8">Join the game, find your people</p>
@@ -74,7 +78,7 @@ export default function SignupPage() {
                   onChange={e => setUsername(e.target.value.replace(/\s/g, ''))}
                   maxLength={20}
                   className="w-full px-4 py-3.5 rounded-2xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-neon-green/50 focus:border-neon-green/50 transition-all pr-11"
-                  placeholder="your_unique_handle"
+                  placeholder="your unique handle"
                 />
                 <div className="absolute right-4 top-1/2 -translate-y-1/2">
                   {usernameStatus === 'checking' && <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />}

@@ -28,10 +28,14 @@ export default function LoginPage() {
       <div className="flex-1 flex flex-col justify-center px-6 relative z-10">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-sm mx-auto w-full">
           <div className="flex items-center gap-3 mb-12">
-            <div className="w-10 h-10 rounded-2xl bg-neon-blue flex items-center justify-center neon-glow-blue">
-              <Zap className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Pulse Play</h1>
+            <img
+                src="/logo.png" 
+                alt="Logo"
+                width={100}
+                height={100}
+                className="w-6 h-6 object-contain"
+              />
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">Friction</h1>
           </div>
           <h2 className="text-3xl font-bold text-foreground mb-2">Welcome back</h2>
           <p className="text-muted-foreground mb-8">Sign in to find your next game</p>
