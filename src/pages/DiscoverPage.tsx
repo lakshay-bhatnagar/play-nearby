@@ -138,14 +138,48 @@ export default function DiscoverPage() {
           </div>
         </div>
 
-        <div className="relative mt-4 mb-4">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search games, venues, sports..."
-            className="w-full pl-11 pr-12 py-3 rounded-2xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-neon-blue/30 transition-all" />
-          <button onClick={() => setShowFilters(!showFilters)} className={`absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-xl border relative ${showFilters || activeFilterCount > 0 ? 'bg-neon-blue/15 border-neon-blue/30' : 'bg-card border-border'}`}>
-            <SlidersHorizontal className={`w-4 h-4 ${showFilters || activeFilterCount > 0 ? 'text-neon-blue' : 'text-muted-foreground'}`} />
-            {activeFilterCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-neon-orange text-[9px] font-bold text-accent-foreground flex items-center justify-center">{activeFilterCount}</span>}
-          </button>
+        <div className="relative mt-4 mb-4 flex items-center h-13 group">
+          {/* Search Icon - Increased size slightly and adjusted positioning */}
+          <div className="absolute left-4 z-20 pointer-events-none">
+            <Search className="w-5 h-5 text-muted-foreground transition-colors group-focus-within:text-neon-blue" />
+          </div>
+
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search games, venues, sports..."
+            className="
+      w-full h-full 
+      pl-12 pr-14 py-4 
+      rounded-2xl bg-secondary/50 border border-border 
+      text-foreground placeholder:text-muted-foreground/60 
+      text-base /* Prevents iOS Zoom */
+      focus:outline-none focus:ring-2 focus:ring-neon-blue/30 focus:bg-secondary 
+      transition-all
+    "
+          />
+
+          {/* Filter Button - Adjusted size and simplified border logic */}
+          <div className="absolute right-2 z-20 flex items-center">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`
+        p-2.5 rounded-xl border transition-all active:scale-90
+        ${showFilters || activeFilterCount > 0
+                  ? 'bg-neon-blue/15 border-neon-blue/40 shadow-[0_0_15px_rgba(0,229,255,0.1)]'
+                  : 'bg-card border-border shadow-sm'}
+      `}
+            >
+              <SlidersHorizontal className={`w-4.5 h-4.5 ${showFilters || activeFilterCount > 0 ? 'text-neon-blue' : 'text-muted-foreground'}`} />
+
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-neon-orange text-[10px] font-bold text-accent-foreground flex items-center justify-center border-2 border-background shadow-lg">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
         {showFilters && (
