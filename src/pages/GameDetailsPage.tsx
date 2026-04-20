@@ -11,7 +11,7 @@ import { fetchGameParticipants, type GameParticipantView } from '@/lib/game-part
 export default function GameDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const [game, setGame] = useState<any>(null);
   const [host, setHost] = useState<any>(null);
@@ -89,8 +89,8 @@ export default function GameDetailsPage() {
         user_id: user.id,
         joined_at: new Date().toISOString(),
         profile: {
-          name: user.user_metadata?.name ?? null,
-          username: user.user_metadata?.username ?? null,
+          name: profile?.name ?? user.user_metadata?.name ?? null,
+          username: profile?.username ?? user.user_metadata?.username ?? null,
           avatar_url: null,
         },
       }];
