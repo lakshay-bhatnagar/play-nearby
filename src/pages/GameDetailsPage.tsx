@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft, MapPin, Calendar, Users, Zap, Crown } from 'lucide-react';
@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { SPORT_ICONS } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { fetchGameParticipants, type GameParticipantView } from '@/lib/game-participants';
 
 export default function GameDetailsPage() {
   const { id } = useParams();
@@ -14,15 +15,16 @@ export default function GameDetailsPage() {
   const { toast } = useToast();
   const [game, setGame] = useState<any>(null);
   const [host, setHost] = useState<any>(null);
-  const [participants, setParticipants] = useState<any[]>([]);
+  const [participants, setParticipants] = useState<GameParticipantView[]>([]);
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
 
   const [venue, setVenue] = useState<any>(null);
 
-  const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
     if (!id) return;
+    setLoading(true);
     const { data: g } = await supabase.from('games').select('*').eq('id', id).single();
     setGame(g);
     if (g) {
@@ -32,21 +34,40 @@ export default function GameDetailsPage() {
         const { data: v } = await supabase.from('venues').select('*').eq('id', (g as any).venue_id).maybeSingle();
         setVenue(v);
       }
-      const { data: parts } = await supabase.from('game_participants').select('user_id, profiles:user_id(name, username)').eq('game_id', id);
-      // Manual join workaround: fetch profiles
-      if (parts) {
-        const ids = parts.map((p: any) => p.user_id);
-        const { data: profs } = await supabase.from('profiles').select('user_id, name, username').in('user_id', ids);
-        const merged = parts.map((p: any) => ({ ...p, profile: profs?.find((pr: any) => pr.user_id === p.user_id) }));
-        setParticipants(merged);
-      }
+      const parts = await fetchGameParticipants(id);
+      setParticipants(parts);
       const { data: o } = await supabase.from('orders').select('total_amount, friction_id').eq('game_id', id).maybeSingle();
       setOrder(o);
+    } else {
+      setParticipants([]);
+      setVenue(null);
+      setHost(null);
+      setOrder(null);
     }
     setLoading(false);
-  };
+  }, [id]);
 
-  useEffect(() => { fetchAll(); }, [id]);
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const channel = supabase
+      .channel(`game-details-${id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'game_participants', filter: `game_id=eq.${id}` }, () => {
+        fetchAll();
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'games', filter: `id=eq.${id}` }, () => {
+        fetchAll();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id, fetchAll]);
 
   const handleJoin = async () => {
     if (!user || !game) return;
@@ -62,7 +83,41 @@ export default function GameDetailsPage() {
       else toast({ title: 'Error', description: error.message, variant: 'destructive' });
       return;
     }
+    setParticipants((current) => {
+      if (current.some((participant) => participant.user_id === user.id)) return current;
+      return [...current, {
+        user_id: user.id,
+        joined_at: new Date().toISOString(),
+        profile: {
+          name: user.user_metadata?.name ?? null,
+          username: user.user_metadata?.username ?? null,
+          avatar_url: null,
+        },
+      }];
+    });
+    setGame((current: any) => current ? { ...current, current_players: Math.min(current.max_players, current.current_players + 1) } : current);
     toast({ title: "You're in! 🎉" });
+    fetchAll();
+  };
+
+  const handleLeave = async () => {
+    if (!user || !game) return;
+    setJoining(true);
+    const { error } = await supabase
+      .from('game_participants')
+      .delete()
+      .eq('game_id', game.id)
+      .eq('user_id', user.id);
+    setJoining(false);
+
+    if (error) {
+      toast({ title: 'Could not leave game', description: error.message, variant: 'destructive' });
+      return;
+    }
+
+    setParticipants((current) => current.filter((participant) => participant.user_id !== user.id));
+    setGame((current: any) => current ? { ...current, current_players: Math.max(0, current.current_players - 1) } : current);
+    toast({ title: 'You left the game' });
     fetchAll();
   };
 
@@ -176,11 +231,11 @@ export default function GameDetailsPage() {
               <motion.div key={p.user_id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}
                 className="p-3 rounded-2xl bg-card border border-border flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center text-xs font-mono text-muted-foreground">
-                  {(p.profile?.name || p.profile?.username || '?').charAt(0).toUpperCase()}
+                  {(p.profile?.username || p.profile?.name || '?').charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">{p.profile?.name || 'Player'}</p>
-                  {p.profile?.username && <p className="text-xs text-muted-foreground">@{p.profile.username}</p>}
+                  <p className="text-sm font-medium text-foreground">{p.profile?.username ? `@${p.profile.username}` : p.profile?.name || 'Player'}</p>
+                  {p.profile?.name && p.profile?.username && <p className="text-xs text-muted-foreground">{p.profile.name}</p>}
                 </div>
                 {p.user_id === game.host_id && (
                   <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-neon-orange/15 text-neon-orange font-medium">Host</span>
@@ -200,12 +255,13 @@ export default function GameDetailsPage() {
           </motion.button>
         </motion.div>
       )}
-      {alreadyJoined && (
-        <div className="fixed bottom-6 left-0 right-0 z-40 px-5">
-          <div className="w-full py-4 rounded-2xl bg-neon-green/15 border border-neon-green/30 text-neon-green font-semibold text-center">
-            ✓ You're in this game
-          </div>
-        </div>
+      {!isHost && alreadyJoined && (
+        <motion.div initial={{ y: 100 }} animate={{ y: 0 }} className="fixed bottom-6 left-0 right-0 z-40 px-5">
+          <motion.button whileTap={{ scale: 0.97 }} onClick={handleLeave} disabled={joining}
+            className="w-full py-4 rounded-2xl bg-destructive/10 border border-destructive/30 text-destructive font-semibold disabled:opacity-50">
+            {joining ? 'Leaving...' : 'Exit Game'}
+          </motion.button>
+        </motion.div>
       )}
     </div>
   );
