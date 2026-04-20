@@ -1,16 +1,18 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Clock, Users, Zap, Calendar } from 'lucide-react';
+import { MapPin, Clock, Users, Zap, Calendar, Check } from 'lucide-react';
 import type { Game } from '@/types';
 import { SPORT_ICONS } from '@/types';
 
 interface GameCardProps {
-  game: Game;
+  game: Game & { venueName?: string };
   onJoin?: () => void;
   index?: number;
+  alreadyJoined?: boolean;
+  isHost?: boolean;
 }
 
-export function GameCard({ game, onJoin, index = 0 }: GameCardProps) {
+export function GameCard({ game, onJoin, index = 0, alreadyJoined = false, isHost = false }: GameCardProps) {
   const navigate = useNavigate();
 
   const intensityColor =
@@ -23,8 +25,8 @@ export function GameCard({ game, onJoin, index = 0 }: GameCardProps) {
     : game.intensity === 'medium' ? 'bg-neon-blue'
     : 'bg-neon-green';
 
-  const slotsLeft = game.maxPlayers - game.currentPlayers;
-  const fillPercent = (game.currentPlayers / game.maxPlayers) * 100;
+  const slotsLeft = Math.max(0, game.maxPlayers - game.currentPlayers);
+  const fillPercent = Math.min(100, (game.currentPlayers / game.maxPlayers) * 100);
 
   const dt = new Date(game.dateTime);
   const formatTime = () => dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -36,6 +38,11 @@ export function GameCard({ game, onJoin, index = 0 }: GameCardProps) {
     if (day.getTime() === tomorrow.getTime()) return 'Tomorrow';
     return dt.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
   };
+
+  // Show venue name primarily; fall back to location
+  const venueName = game.venueName || game.location;
+  const isFull = slotsLeft === 0;
+  const showJoined = alreadyJoined || isHost;
 
   return (
     <motion.div
@@ -67,7 +74,7 @@ export function GameCard({ game, onJoin, index = 0 }: GameCardProps) {
       <div className="flex flex-col gap-2 mb-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <MapPin className="w-3.5 h-3.5 shrink-0" />
-          <span className="truncate">{game.location}</span>
+          <span className="truncate font-medium text-foreground">{venueName}</span>
           {game.distance && <span className="ml-auto text-xs font-mono shrink-0">{game.distance}</span>}
         </div>
         <div className="flex items-center gap-4 flex-wrap">
@@ -92,7 +99,7 @@ export function GameCard({ game, onJoin, index = 0 }: GameCardProps) {
             <Users className="w-3.5 h-3.5" />
             <span className="font-mono">{game.currentPlayers}/{game.maxPlayers}</span>
           </div>
-          <span className={`text-xs font-medium ${slotsLeft <= 2 ? 'text-neon-orange' : 'text-muted-foreground'}`}>
+          <span className={`text-xs font-medium ${slotsLeft <= 2 && slotsLeft > 0 ? 'text-neon-orange' : 'text-muted-foreground'}`}>
             {slotsLeft} {slotsLeft === 1 ? 'slot' : 'slots'} left
           </span>
         </div>
@@ -107,11 +114,20 @@ export function GameCard({ game, onJoin, index = 0 }: GameCardProps) {
       </div>
 
       <motion.button
-        whileTap={{ scale: 0.95 }}
-        onClick={(e) => { e.stopPropagation(); onJoin?.(); }}
-        className="w-full py-3 rounded-2xl bg-secondary border border-border text-foreground font-medium text-sm hover:bg-surface-elevated transition-colors active:bg-surface-elevated"
+        whileTap={!showJoined && !isFull ? { scale: 0.95 } : undefined}
+        onClick={(e) => { e.stopPropagation(); if (!showJoined && !isFull) onJoin?.(); }}
+        disabled={showJoined || isFull}
+        className={`w-full py-3 rounded-2xl font-medium text-sm transition-colors flex items-center justify-center gap-1.5 ${
+          isHost
+            ? 'bg-neon-orange/10 border border-neon-orange/30 text-neon-orange'
+            : alreadyJoined
+              ? 'bg-neon-green/10 border border-neon-green/30 text-neon-green'
+              : isFull
+                ? 'bg-secondary border border-border text-muted-foreground opacity-60'
+                : 'bg-secondary border border-border text-foreground hover:bg-surface-elevated active:bg-surface-elevated'
+        }`}
       >
-        {slotsLeft > 0 ? 'Join Game' : 'Full'}
+        {isHost ? 'Your Game' : alreadyJoined ? (<><Check className="w-3.5 h-3.5" />Joined</>) : isFull ? 'Full' : 'Join Game'}
       </motion.button>
     </motion.div>
   );
