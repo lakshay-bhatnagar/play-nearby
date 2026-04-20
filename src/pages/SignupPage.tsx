@@ -49,17 +49,25 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-dvh bg-background flex flex-col relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-[500px] h-[400px] bg-neon-green/6 blur-[120px] rounded-full pointer-events-none" />
-      <div className="flex-1 flex flex-col justify-center px-6 relative z-10 py-10">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="max-w-sm mx-auto w-full">
-          <div className="flex items-center gap-3 mb-10">
-            <img
-                src="/logo.png" 
+      {/* This is the "flow" blob - adjusted to match the signup page positioning */}
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-neon-green/15 blur-[120px] rounded-full pointer-events-none opacity-60" />
+
+      <div className="flex-1 flex flex-col justify-center px-6 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="max-w-sm mx-auto w-full"
+        >
+          <div className="flex items-center gap-3 mb-12">
+            {/* Logo container with a subtle glow to anchor the "flow" */}
+            <div className="relative">
+              <img
+                src="/friction_no_bg.png"
                 alt="Logo"
-                width={100}
-                height={100}
-                className="w-6 h-6 object-contain"
+                className="w-14 h-14 object-contain relative z-10"
               />
+            </div>
             <h1 className="text-2xl font-bold text-foreground tracking-tight">Friction</h1>
           </div>
           <h2 className="text-3xl font-bold text-foreground mb-2">Create account</h2>
