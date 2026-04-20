@@ -128,7 +128,9 @@ export default function CreateGamePage() {
       ? new Date(`${selectedSlots[0].slot_date}T${selectedSlots[0].start_time}`).toISOString()
       : new Date().toISOString();
 
-    // Create game
+    // Create game.
+    // current_players starts at (alreadyJoined - 1) because the host's auto-join below
+    // triggers update_game_player_count which increments by 1, landing on alreadyJoined.
     const { data: gameData, error: gameErr } = await supabase.from('games').insert({
       host_id: user.id,
       sport,
@@ -138,7 +140,7 @@ export default function CreateGamePage() {
       venue_slot_ids: selectedSlots.map(s => s.id),
       date_time: dateTime,
       max_players: maxPlayers,
-      current_players: alreadyJoined,
+      current_players: Math.max(0, alreadyJoined - 1),
       skill_level: skillLevel,
       intensity,
     }).select().single();
