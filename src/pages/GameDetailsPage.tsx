@@ -19,6 +19,8 @@ export default function GameDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
 
+  const [venue, setVenue] = useState<any>(null);
+
   const fetchAll = async () => {
     if (!id) return;
     const { data: g } = await supabase.from('games').select('*').eq('id', id).single();
@@ -26,6 +28,10 @@ export default function GameDetailsPage() {
     if (g) {
       const { data: hostP } = await supabase.from('profiles').select('name, username, avatar_url').eq('user_id', (g as any).host_id).maybeSingle();
       setHost(hostP);
+      if ((g as any).venue_id) {
+        const { data: v } = await supabase.from('venues').select('*').eq('id', (g as any).venue_id).maybeSingle();
+        setVenue(v);
+      }
       const { data: parts } = await supabase.from('game_participants').select('user_id, profiles:user_id(name, username)').eq('game_id', id);
       // Manual join workaround: fetch profiles
       if (parts) {
