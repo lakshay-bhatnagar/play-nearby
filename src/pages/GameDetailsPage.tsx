@@ -118,7 +118,15 @@ export default function GameDetailsPage() {
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5">
             <MapPin className="w-3.5 h-3.5" />Venue
           </div>
-          <p className="text-sm font-semibold text-foreground">{game.location}</p>
+          <p className="text-sm font-semibold text-foreground">{venue?.name || game.location}</p>
+          {venue && (
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {venue.address || venue.location}
+            </p>
+          )}
+          {venue && (
+            <button onClick={() => navigate(`/venue/${venue.id}`)} className="text-[11px] text-neon-blue mt-2 underline">View venue details →</button>
+          )}
         </div>
 
         <div className="mt-3 grid grid-cols-2 gap-3">

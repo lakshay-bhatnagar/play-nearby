@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { SPORT_ICONS } from '@/types';
 
 interface Venue {
-  id: string; name: string; location: string; supported_sports: string[]; description: string | null; image_url: string | null;
+  id: string; name: string; location: string; address: string | null; supported_sports: string[]; description: string | null; image_url: string | null;
 }
 
 interface Slot { id: string; price_per_hour: number; }
@@ -74,8 +74,9 @@ export default function VenueDetailsPage() {
 
       <div className="px-5 pt-6 relative z-10">
         <h1 className="text-2xl font-bold text-foreground tracking-tight">{venue.name}</h1>
-        <div className="flex items-center gap-1.5 text-sm text-muted-foreground mt-1.5">
-          <MapPin className="w-4 h-4" />{venue.location}
+        <div className="flex items-start gap-1.5 text-sm text-muted-foreground mt-1.5">
+          <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>{venue.address || venue.location}</span>
         </div>
 
         {/* Sports */}
