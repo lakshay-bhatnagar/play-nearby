@@ -64,15 +64,19 @@ export default function CreateGamePage() {
     });
   }, [sport]);
 
-  // Fetch slots when venue and date are selected
+  // Fetch slots when venue and date are selected.
+  // Always release expired locks first so the list is accurate.
   useEffect(() => {
     if (!selectedVenue || !selectedDate) return;
-    supabase.from('venue_slots').select('*')
-      .eq('venue_id', selectedVenue.id)
-      .eq('slot_date', selectedDate)
-      .eq('is_available', true)
-      .order('start_time', { ascending: true })
-      .then(({ data }) => setSlots((data as any[]) || []));
+    (async () => {
+      await (supabase.rpc as any)('release_expired_slot_locks');
+      const { data } = await supabase.from('venue_slots').select('*')
+        .eq('venue_id', selectedVenue.id)
+        .eq('slot_date', selectedDate)
+        .eq('status', 'available' as any)
+        .order('start_time', { ascending: true });
+      setSlots((data as any[]) || []);
+    })();
   }, [selectedVenue, selectedDate]);
 
   // Fetch products when entering equipment step
@@ -124,6 +128,31 @@ export default function CreateGamePage() {
     if (!user || !selectedVenue) return;
     setLoading(true);
 
+    // 1. Atomically lock the selected slots before doing anything else
+    const slotIds = selectedSlots.map(s => s.id);
+    const { data: lockResult, error: lockErr } = await (supabase.rpc as any)('lock_venue_slots', {
+      _slot_ids: slotIds,
+      _user_id: user.id,
+    });
+    if (lockErr || !lockResult?.success) {
+      toast({
+        title: 'Slot already taken',
+        description: lockResult?.error || lockErr?.message || 'Please pick another slot',
+        variant: 'destructive',
+      });
+      // Refresh slot list so the user sees the up-to-date availability
+      const { data } = await supabase.from('venue_slots').select('*')
+        .eq('venue_id', selectedVenue.id)
+        .eq('slot_date', selectedDate)
+        .eq('status', 'available' as any)
+        .order('start_time', { ascending: true });
+      setSlots((data as any[]) || []);
+      setSelectedSlots([]);
+      setStep('slots');
+      setLoading(false);
+      return;
+    }
+
     const dateTime = selectedSlots.length > 0
       ? new Date(`${selectedSlots[0].slot_date}T${selectedSlots[0].start_time}`).toISOString()
       : new Date().toISOString();
@@ -146,6 +175,8 @@ export default function CreateGamePage() {
     }).select().single();
 
     if (gameErr) {
+      // Release the locks since we won't proceed
+      await (supabase.rpc as any)('release_venue_slot_locks', { _slot_ids: slotIds, _user_id: user.id });
       toast({ title: 'Error creating game', description: gameErr.message, variant: 'destructive' });
       setLoading(false);
       return;
@@ -165,6 +196,7 @@ export default function CreateGamePage() {
     }).select().single();
 
     if (orderErr) {
+      await (supabase.rpc as any)('release_venue_slot_locks', { _slot_ids: slotIds, _user_id: user.id });
       toast({ title: 'Error creating order', description: orderErr.message, variant: 'destructive' });
       setLoading(false);
       return;
@@ -195,9 +227,20 @@ export default function CreateGamePage() {
       await supabase.from('payments').insert({ order_id: orderData.id, user_id: user.id, payment_type: 'equipment', amount: equipmentCost + cgst / 2 + sgst / 2, payment_method: paymentMethod, status: 'completed' });
     }
 
-    // Mark slots as unavailable
-    for (const s of selectedSlots) {
-      await supabase.from('venue_slots').update({ is_available: false }).eq('id', s.id);
+    // Confirm the booking on the locked slots (atomic transition locked → booked)
+    const { data: confirmRes } = await (supabase.rpc as any)('confirm_venue_slot_booking', {
+      _slot_ids: slotIds,
+      _user_id: user.id,
+      _game_id: gameData.id,
+    });
+    if (!confirmRes?.success) {
+      toast({
+        title: 'Booking expired',
+        description: confirmRes?.error || 'Slot lock expired before payment completed',
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
     }
 
     // Auto-join as participant
