@@ -382,35 +382,85 @@ export type Database = {
         }
         Relationships: []
       }
-      venue_slots: {
+      venue_slot_templates: {
         Row: {
           created_at: string
+          day_of_week: number
           end_time: string
           id: string
-          is_available: boolean
           price_per_hour: number
-          slot_date: string
           start_time: string
           venue_id: string
         }
         Insert: {
           created_at?: string
+          day_of_week: number
           end_time: string
           id?: string
-          is_available?: boolean
           price_per_hour?: number
-          slot_date: string
           start_time: string
           venue_id: string
         }
         Update: {
           created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          price_per_hour?: number
+          start_time?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venue_slot_templates_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venue_slots: {
+        Row: {
+          booked_by_game_id: string | null
+          created_at: string
+          end_time: string
+          id: string
+          is_available: boolean
+          lock_expires_at: string | null
+          locked_by_user_id: string | null
+          price_per_hour: number
+          slot_date: string
+          start_time: string
+          status: string
+          venue_id: string
+        }
+        Insert: {
+          booked_by_game_id?: string | null
+          created_at?: string
+          end_time: string
+          id?: string
+          is_available?: boolean
+          lock_expires_at?: string | null
+          locked_by_user_id?: string | null
+          price_per_hour?: number
+          slot_date: string
+          start_time: string
+          status?: string
+          venue_id: string
+        }
+        Update: {
+          booked_by_game_id?: string | null
+          created_at?: string
           end_time?: string
           id?: string
           is_available?: boolean
+          lock_expires_at?: string | null
+          locked_by_user_id?: string | null
           price_per_hour?: number
           slot_date?: string
           start_time?: string
+          status?: string
           venue_id?: string
         }
         Relationships: [
@@ -461,7 +511,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      confirm_venue_slot_booking: {
+        Args: { _game_id: string; _slot_ids: string[]; _user_id: string }
+        Returns: Json
+      }
+      generate_slots_from_templates: {
+        Args: { _days?: number }
+        Returns: number
+      }
+      lock_venue_slots: {
+        Args: { _slot_ids: string[]; _user_id: string }
+        Returns: Json
+      }
+      release_expired_slot_locks: { Args: never; Returns: undefined }
+      release_venue_slot_locks: {
+        Args: { _slot_ids: string[]; _user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
